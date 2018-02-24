@@ -333,10 +333,20 @@ void MidiInterface<SerialPort, Settings>::sendSysEx(unsigned inLength,
         mSerial.write(0xf0);
     }
 
+#if defined(ARDUINO_SAM_DUE)
     for (unsigned i = 0; i < inLength; ++i)
     {
         mSerial.write(inArray[i]);
     }
+#else
+    for (unsigned i = 0; i < inLength; )
+    {
+        if (mSerial.availableForWrite() > 0) {
+            mSerial.write(inArray[i]);
+            i++;
+        }
+    }
+#endif
 
     if (writeBeginEndBytes)
     {
